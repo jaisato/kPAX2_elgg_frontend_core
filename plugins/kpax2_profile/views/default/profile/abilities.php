@@ -12,22 +12,16 @@
             </tr>
         </thead>
         <tbody>
+            <?php foreach ($vars['abilities'] as $ability) { ?>
             <tr>
-                <td>Mathematics</td>
-                <td>A+</td>
-                <td>36000</td>
-                <td>S</td>
-                <td>3450</td>
-                <td>5000</td>
+                <td><?= $ability->name; ?></td>
+                <td><?= $ability->level; ?></td>
+                <td><?= $ability->time_level; ?></td>
+                <td><?= $ability->max_level; ?></td>
+                <td><?= $ability->time_max_level; ?></td>
+                <td><?= $ability->experience; ?></td>
             </tr>
-            <tr>
-                <td>Computing</td>
-                <td>S</td>
-                <td>36000</td>
-                <td>S</td>
-                <td>6000</td>
-                <td>8000</td>
-            </tr>
+            <?php } ?>
         </tbody>
     </table>
 </div>
