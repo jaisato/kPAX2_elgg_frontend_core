@@ -243,6 +243,9 @@ class kpaxSrv {
     //     $body = 'secretSession=' . $campusSession . '&tags=' . $tagsCommaSeparated;
     //     return $this->service("game/tag/" . $idGame . "/addDel", "POST", $body);
     // }
+    public function getUserProfile($nickname) {
+      return $this->service('/userprofile?q={"nickname":"' . $nickname . '"}');
+    }
 }
 
 ?>
