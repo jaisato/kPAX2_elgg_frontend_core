@@ -12,7 +12,9 @@ $userprofile = $arrUserprofile['body'][0];
 
 $content .= elgg_view('profile/personaldata',
     ['name' => $userprofile->name
-        , 'nick' => $userprofile->nickname]);
+        , 'nick' => $userprofile->nickname,
+        'created_at' => $userprofile->created_at,
+        'updated_at' => $userprofile->updated_at]);
 
 $content .= elgg_view('profile/attributes', ['attributes' => $userprofile->attributes]);
 

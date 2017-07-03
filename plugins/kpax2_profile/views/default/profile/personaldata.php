@@ -1,5 +1,5 @@
 <div id="personal-data" style="clear: both; overflow: visible">
-    <img src="http://www.freeiconspng.com/uploads/no-image-icon-23.jpg" width="200px" style="float: left"/>
+    <img src="http://image.ibb.co/ffX9xk/norris1.jpg" width="200px" style="float: left"/>
     <ul>
         <li>
             <label>Name:</label>
