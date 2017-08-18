@@ -1,5 +1,5 @@
 <div id="attributes" style="clear: both">
-    <img width="200px" src="http://www.freeiconspng.com/uploads/no-image-icon-23.jpg" style="float: right;">
+    <img src="https://preview.ibb.co/fmcniQ/blank.png" style="float: right; width: 600px;">
     <ul>
         <li>
             <label>Strength:</label>
