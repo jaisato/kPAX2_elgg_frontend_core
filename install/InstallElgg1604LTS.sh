@@ -19,6 +19,12 @@ echo “System Upgrade”
 apt-get upgrade
 read -rsp $'Press any key to continue...\n' -n1
 
+# unzip & aptitude
+clear
+echo "About to Install unzip and aptitude utilities"
+apt-get install unzip aptitude
+read -rsp $'Press any key to continue...\n' -n1
+
 # Apache
 clear
 echo "About to Install Apache"
@@ -35,6 +41,12 @@ read -rsp $'Press any key to continue...\n' -n1
 clear
 echo "About to Install PHP"
 apt-get install php7.0 libapache2-mod-php7.0 php-mysql php-dom
+read -rsp $'Press any key to continue...\n' -n1
+
+# PHP Extensions
+clear
+echo "About to Install PHP Extensions"
+aptitude install php-gd php-mbstring php7.0-gd php7.0-mbstring
 read -rsp $'Press any key to continue...\n' -n1
 
 #  Config /etc/apache2/apache2.conf
