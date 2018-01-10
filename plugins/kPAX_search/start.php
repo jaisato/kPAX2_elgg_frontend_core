@@ -1,105 +1,79 @@
 <?php
 
-elgg_register_event_handler('init', 'system', 'kpax_init');
+/**
+ * Search Plugin
+ *
+ */
 
-function kpax_init() {
+elgg_register_event_handler('init', 'system', 'kpsearch_init');
+
+function kpsearch_init() {
 
     $root = dirname(__FILE__);
 
-    if (!update_subtype('object', 'kpax', 'ElggKpax')) {
-        add_subtype('object', 'kpax', 'ElggKpax');
+    if (!update_subtype('object', 'kpsearch', 'ElggKpax')) {
+        add_subtype('object', 'kpsearch', 'ElggKpax');
     }
 
-    elgg_register_page_handler('kpax', 'kpax_page_handler');
+    elgg_register_page_handler('kpsearch', 'kpsearch_page_handler');
 
-    elgg_register_plugin_hook_handler('g:view', 'object', 'kpax_url');
+    elgg_register_plugin_hook_handler('game:view', 'object', 'kpsearch_url');
 
-    elgg_register_entity_type('object', 'kpax');
+    elgg_register_entity_type('object', 'kpsearch');
 
+/*  already registered at kPax_core
     // libraries
     elgg_register_library('elgg:kpax', "$root/lib/kpax.php");
     elgg_register_library('elgg:kpaxSrv', "$root/lib/kpaxSrv.php");
     elgg_register_library('elgg:kpaxOauth', "$root/lib/kpaxOauth.php");
     elgg_register_library('elgg:kpaxOauthLib', "$root/lib/Oauth.php");
+*/
+    elgg_register_library('elgg:kpax:game', "$root/lib/game.php");
+    elgg_register_library('elgg:kpax:game_list', "$root/lib/game_list.php");
 
     elgg_load_library('elgg:kpax');
     elgg_load_library('elgg:kpaxSrv');
     elgg_load_library('elgg:kpaxOauth');
     elgg_load_library('elgg:kpaxOauthLib');
+    elgg_load_library('elgg:kpax:game');
+    elgg_load_library('elgg:kpax:game_list');
 
-    // actions
-    elgg_register_action('kpax/save', "$root/actions/kpax/save.php");
-    elgg_register_action('kpax/delete', "$root/actions/kpax/delete.php");
 
+    // menus
     elgg_register_menu_item('site', array(
-        'name' => 'developers',
-        'text' => elgg_echo('kPAX:devs'),
-        'href' => 'kpax/devs'
+        'name' => 'games',
+        'text' => elgg_echo('kPAX:games'),
+        'href' => 'kpsearch/search'
     ));
 
-    // WS AUTH USER
-    // TODO
-    function auth_user($username="", $password = "") {
-
-        $credentials = array('username' => $username, 'password' => $password);
-
-        $user = get_user_by_username($credentials['username']);
-        if (!empty($user)) {
-            if ($user->password !== generate_user_password($user, $credentials['password'])) {
-                log_login_failure($user->guid);
-                throw new LoginException(elgg_echo('LoginException:PasswordFailure'));
-                return "ERROR";
-            }
-            return "OK";
-        } else {
-            return "ERROR";
-        }
-    }
-
-    elgg_ws_expose_function("user.auth", "auth_user", array("username" => array('type' => 'String', 'required' => true), "password" => array('type' => 'String', 'required' => true)), 'Auth user elgg', 'GET', true, false);
-
-    function auth_sign($username="") {
-
-        $credentials = array('username' => $username);
-
-        $user = get_user_by_username($credentials['username']);
-        if (!empty($user)) {
-            return "OK";
-        } else {
-            $user = get_user_by_username("uoc.edu_".$credentials['username']);
-            if(!empty ($user))return "OK";
-            return "ERROR";
-        }
-    }
-
-    elgg_ws_expose_function("auth.sign", "auth_sign", array("username" => array('type' => 'String', 'required' => true)), 'Auth sign ellg', 'GET', true, false);
 }
 
+function kpsearch_page_handler($page) {
 
-function kpax_page_handler($page) {
-
-    elgg_push_breadcrumb(elgg_echo('kPAX:play'), 'kpax/play');
-    elgg_push_breadcrumb(elgg_echo('kPAX:devs'), 'kpax/devs');
-    elgg_push_breadcrumb(elgg_echo('Games'), 'kpax/all');   //NOU  ??
+    elgg_push_breadcrumb(elgg_echo('kPAX:games'), 'kpsearch/games');
+    elgg_push_breadcrumb(elgg_echo('kPAX:games:search'), 'kpsearch/gamessearch');
 
     // old group usernames
     if (substr_count($page[0], 'group:')) {
         preg_match('/group\:([0-9]+)/i', $page[0], $matches);
         $guid = $matches[1];
         if ($entity = get_entity($guid)) {
-            kpax_url_forwarder($page);
+            kpsearch_url_forwarder($page);
         }
     }
 
     // user usernames
     $user = get_user_by_username($page[0]);
     if ($user) {
-        kpax_url_forwarder($page);
+        kpsearch_url_forwarder($page);
     }
 
-    $pages = dirname(__FILE__) . '/pages/kpax';
+    $pages = dirname(__FILE__) . '/pages/kpsearch';
 
     switch ($page[0]) {
+        case "search":
+            include "$pages/search.php";
+            break;
 
         case "owner":
             include "$pages/owner.php";
@@ -114,6 +88,12 @@ function kpax_page_handler($page) {
             set_input('guid', $page[1]);
             include "$pages/view.php";
             break;
+
+        case "view2":
+            set_input('guid', $page[1]);
+            include "$pages/view2.php";
+            break;
+
 
         case "add":
             gatekeeper();
@@ -136,8 +116,8 @@ function kpax_page_handler($page) {
             include "$pages/bookmarklet.php";
             break;
 
-        case "play":
-            include "$pages/play.php";
+        case "games":
+            include "$pages/games.php";
             break;
 
         case "devs":
@@ -164,7 +144,7 @@ function kpax_page_handler($page) {
  * @param string $page
  */
 //function kpax_url_forwarder($page) {
-function kpax_url_forwarder($hook, $type, $url, $params) {
+function kpsearch_url_forwarder($hook, $type, $url, $params) {
     $page = $params['entity'];
 
     global $CONFIG;
@@ -204,12 +184,14 @@ function kpax_url_forwarder($hook, $type, $url, $params) {
  * @param ElggEntity $entity The bookmarked object
  * @return string bookmarked item URL
  */
-function kpax_url($entity) {
+function kpsearch_url($entity) {
     global $CONFIG;
 
     $title = $entity->title;
     $title = elgg_get_friendly_title($title);
-    return $CONFIG->url . "kpax/view/" . $entity->getGUID() . "/" . $title;
+    return $CONFIG->url . "kpsearch/view/" . $entity->getGUID() . "/" . $title;
 }
 
 ?> 
+
+

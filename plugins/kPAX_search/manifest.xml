@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin_manifest xmlns="http://www.elgg.org/plugin_manifest/1.8">
-	<name>Kpax 2</name>
-	<author>Juan Francisco Sánchez Ramos</author>
+	<name>Kpax Search</name>
+	<author>Felix Ortego Perez</author>
 	<version>1.5</version>
 	<category>development</category>
 	<description>Kpax integration</description>
 	<website>http://www.uoc.edu/</website>
-	<copyright>(C) Universitat Oberta de Catalunya 2016</copyright>
+	<copyright>(C) Universitat Oberta de Catalunya 2017</copyright>
 	<license>GNU General Public License version 2</license>
 	<requires>
 		<type>elgg_release</type>
@@ -16,6 +16,11 @@
 		<type>priority</type>
 		<priority>after</priority>
 		<plugin>html5</plugin>
+	</requires>
+	<requires>
+		<type>priority</type>
+		<priority>after</priority>
+		<plugin>kPAX_core</plugin>
 	</requires>
 	<requires>
 		<type>priority</type>

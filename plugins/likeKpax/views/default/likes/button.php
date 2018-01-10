@@ -5,28 +5,32 @@
  * @uses $vars['entity']
  */
 
-
 $objKpax = new kpaxSrv(elgg_get_logged_in_user_entity()->username);
+
 if (!isset($vars['entity'])) {
 	return true;
 }
-
-
+$user = elgg_get_logged_in_user_entity();  
+$entity=$vars['entity'];
+        
 // Realizamos la consulta por servicio
 $guid = $vars['entity']->getGUID();
 
-$objKpaxLike = $objKpax->getLikeGame($_SESSION["campusSession"], $guid);
-
+//$objKpaxLike = $objKpax->getLikeGame($_SESSION["campusSession"], $guid);
+/*
 if ($objKpaxLike->containerId == 0 && $objKpaxLike!=null) {
     $user = elgg_get_logged_in_user_entity();
     $objKpax->addLikeGame($_SESSION["campusSession"],$user->guid,$guid);
     create_annotation($guid, 'likes', "likes", "", $user->guid, $vars['entity']->access_id);
 }
+ */
 
 // check to see if the user has already liked this
 if (elgg_is_logged_in() && $vars['entity']->canAnnotate(0, 'likes')) {
 	if (!elgg_annotation_exists($guid, 'likes')) {
+            error_log ('XXXXXXXXXXXXXXXXXX  no existe anotacion, likes' );
 		$url = elgg_get_site_url() . "action/likeKpax/add?guid={$guid}";
+                 error_log ('XXXXXXXXXXXXXXXXXX  url es ' . $url );
 		$params = array(
 			'href' => $url,
 			'text' => elgg_view_icon('thumbs-up'),
@@ -35,6 +39,7 @@ if (elgg_is_logged_in() && $vars['entity']->canAnnotate(0, 'likes')) {
 		);
 		$likes_button = elgg_view('output/url', $params);
 	} else {
+             error_log ('XXXXXXXXXXXXXXXXXX SI no existe anotacion, likes' );
 		$options = array(
 			'guid' => $guid,
 			'annotation_name' => 'likes',

@@ -1,0 +1,428 @@
+/* HEADER */
+h1.page-title,
+h1.elgg-heading-main{
+	display: none;
+}
+
+.elgg-head {margin: 0; padding: 0;}
+button.help{
+	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAwUlEQVQ4y9WU6w3DIAyEGcEjZIQOwBAdgdEyikfoAAyRDVwTgZQQPyDKj/akkyIEn2zOIRBReNrh/6GsxEY2dS5raQrKWtgfAda77FlcKOvF3gaAzZsE7qGnCgGAEJGayndZ6ytWofUOTweOwCNYqDhp0EsoTTHG3U1SeBrUvD8HShdoTVwFDrQvQmEEqgQlQ732rbY9KE7M53BQSTuUc95tQNWRgptQc/jfN9q2f1PWOgn0H5Qa1Forhkefvp99+b/H6ZOyGDEoawAAAABJRU5ErkJggg==");
+	background-repeat: no-repeat;
+	background-color: transparent;
+	background-position: 0 0;
+}
+/* INNER */
+.kpax.game .elgg-main{
+	margin: 0;
+	padding: 0;
+}
+.kpax.game .elgg-page-body .elgg-inner{
+	background: #e5e5e5;
+	padding: 0;
+	margin: 0;
+	max-width: none;
+}
+
+/*Menu juegos*/
+.menu_vertical{
+	float: left;
+}
+.menu_vertical .content{
+	box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+	background: rgba(245, 245, 245, 0.95);
+	overflow: auto;
+}
+.menu_vertical ul.nav{
+	padding-left: 0;
+	list-style: none;
+	line-height: 2;
+	margin-bottom: 20px;
+}
+.menu_vertical li{
+	text-align: left;
+	font-size: 1.2em;
+}
+.menu_vertical ul.nav:after {
+    border-bottom: 1px solid #b2b2b2;
+    content: " ";
+    margin-left: 35px;
+    padding: 0 60px;
+}
+.menu_vertical li:hover{
+	background: #c5c5c5;
+}
+.menu_vertical .toggle{
+	background: #ccc;
+	height: 250px;
+	width: 30px;
+	position: relative;
+	border: none;
+	cursor: pointer;
+	margin: 0;
+}
+.menu_vertical .toggle.open{ background: #aaa; }
+.menu_vertical .icon-arrow{
+	content: '';
+	background-position: 0 -90px;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    margin: 0;
+    padding: 0;
+}
+.menu_vertical .icon-arrow.open{
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+.menu_vertical li a{
+    color: #666;
+    font-family: "Trebuchet MS",Arial,Tahoma,Verdana,sans-serif;
+    font-size: 1.1em;
+    padding: 5px;
+    width: 100%;
+}
+.menu_vertical li a,
+.menu_vertical li input{
+	text-align: left;
+	margin: 0;
+	padding-left: 15px;
+	background: transparent;
+	width: 100%;
+	height: 40px;
+}
+.menu_vertical li a.active,
+.menu_vertical li input.active{
+	background: #CCC;
+}
+.menu_vertical .menu-title{
+	font-size: 1.5em;
+	font-weight: normal;
+	padding: 10px 17px;
+	background: rgb(63, 92, 169);
+	color: #FFF;
+	border-bottom: 1px solid #333;
+
+}
+
+/*Menu horizontal*/
+.menu_horizontal_top,
+.menu_horizontal_bottom {
+    height: 40px;
+    margin-left: 200px;
+    width: 100%;
+    background: #FFF;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+}
+.menu_horizontal_top li[class*="menu-item-"]{
+	height: 40px;
+	display: inline-block;
+	vertical-align: top;
+}
+.menu_horizontal_top li.hidden{
+	display: none;
+}
+.menu_horizontal_bottom {
+    margin-top: 1px;
+}
+.menu_horizontal_bottom .menu-item{
+	height: 41px;
+	display: inline-block;
+	vertical-align: top;
+}
+
+/*Paginación*/
+.listado_juegos .pagination { padding: 20px; text-align: center; margin-bottom: 25px;}
+
+/* RATING */
+.rating-container a{
+	display: inline-block;
+}
+.star-rating-white{
+	background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAAcklEQVQoz2P4//8/AzmYgWKN6KC4uFgYhGF8UjTqgjBJGqG2GUOxMF6NQAViQCwFxGpAbICk0QAqBpITw6ZRAUkxLqyA1akENCvg9SNQgRYWTVoEA4cSjTDFalAM5uPVCFTABY0/ASSDBKBiXNRNcqRiADBao1Bj6dJdAAAAAElFTkSuQmCC") repeat 0 0;
+	width: 69px;
+	height: 14px;
+}
+.star-rating-black{
+	background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAAdElEQVQoz2P4//8/AzmYgWKN6KC4uDgBhGF8UjQ+AGGSNEJt+w/FCXg1AhUUAHEDEB8A4g9IGj9AxUByBdg0LkBSjAsvwOpUApoX4PUjUMEFLJouEAwcSjTCFB+AYjAfr0agAgNo/AUgGRQAFTOgbpIjFQMAtcfKBD81ItYAAAAASUVORK5CYII=") repeat 0 0;
+	width: 85.3%;
+	height: 14px;
+}
+.price-container{
+	display: inline-block;
+	float: right;
+}
+
+/*Cuadro de un juego*/
+.listado_juegos .cuadro_juego{
+	position: relative; /*Para que el hijo pueda hacer un position absolute respecto al padre*/
+	height: 160px;
+	width: 330px;
+	display:inline-block;
+	margin: 2px;
+	background-color: #ffffff;
+}
+/*Enlace para todo un div*/
+.listado_juegos .juego_link{
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	top: 0;
+}
+
+/*Cuadro de la foto de un juego*/
+.listado_juegos .juego_foto{
+	position: relative; /*Para que el hijo pueda hacer un position absolute respecto al padre*/
+	width: 140px;
+	height: 100%;
+	float: left;
+	background-color: #8d8d8d;
+}
+
+/*Cuadro del texto de un juego*/
+.listado_juegos .juego_texto{
+	position: relative; /*Para que el hijo pueda hacer un position absolute respecto al padre*/
+	width: 170px;
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-top: 7px;
+	float: left;
+	background-color: #ffffff;
+}
+
+/*Botones como link*/
+.listado_juegos  .menu_vertical a,
+.listado_juegos  .menu_vertical input { border: none; cursor: pointer; }
+
+.listado_juegos .menu_vertical a:active,
+.listado_juegos .menu_vertical a:focus,
+.listado_juegos .menu_vertical a:hover,
+.listado_juegos .menu_vertical input:active,
+.listado_juegos .menu_vertical input:focus { border: none; box-shadow: none; }
+.listado_juegos .menu_vertical input:hover { text-decoration: underline; }
+
+.menu_horizontal_top label{
+	display: none;
+}
+.menu_horizontal_top input{
+	padding: 7px;
+	margin: 3px;
+}
+.pagination .next{
+	float: right;
+}
+.pagination .previous{
+	float: left;
+}
+.listado_juegos #search_button{
+	width: 100px;
+	background-color: #006AB6;
+	color: #ffffff;
+}
+.pager:after,
+.pager:before{
+	position: relative;
+	right: 55px;
+	content: ' ';
+	display: inline-block;
+	padding: 8px;
+	margin-top: 5px;
+	background-position: 0 0;
+	background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAjUlEQVQoz2P4//8/A7mYYYhrzs3N5SsqKsoE0jLYFGZmZgoWFhZmAYEEhmagxsri4uL/QPwYaIAyssbs7GxhoPwFkDyQnoOhGWiqLlDyA7oBaBp/AdW5YfVzfn6+ObIBeXl5xsgagXQA3gBDM+AnLo04QxtqwHeoAX+xacQbVUC/RQA1vQQF5HBNYeRgAKO6bfkUgtZHAAAAAElFTkSuQmCC") no-repeat;
+}
+.pager:before{
+	margin-right: 15px;
+    -webkit-transform: rotate(-270deg);
+    -moz-transform: rotate(-270deg);
+    -ms-transform: rotate(-270deg);
+    -o-transform: rotate(-270deg);
+    transform: rotate(-270deg);	
+}
+.pager:after{
+	bottom: 0.5px;
+	margin-left: 15px;
+	-webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+
+}
+.pager{
+	position: absolute;
+	margin-top: 7px;
+}
+.pager input{
+	background: white none repeat scroll 0 0;
+    border: medium none;
+    position: absolute;
+    text-indent: 9999px;
+    width: 30px;
+    z-index: 99;
+    cursor: pointer;
+}
+.pager .next{
+    background: #fff none repeat scroll 0 0;
+    display: inline-block;
+    float: left;
+    height: 30px;
+    opacity: 0.5;
+    position: relative;
+    width: 30px;
+    z-index: 1;
+}
+.pager .previous.enabled:hover,
+.pager .next.enabled:hover{opacity: 0;}
+.pager .previous{
+    background: #fff;
+    display: inline-block;
+    float: left;
+    height: 30px;
+    opacity: 0.5;
+    position: relative;
+    width: 30px;
+    z-index: 1;
+}
+/* RESPONSIVE */
+@media screen and (max-width:767px) {
+	.elgg-heading-site { margin: -20px -35px 0; font-size: 3em; }
+	.listado_juegos { position: relative; }
+	.listado_juegos .menu_vertical{
+		width: 32px;
+		z-index: 99;
+		position: absolute;
+		padding-bottom: 15px;
+		top: 0;
+		left: 0;
+	}
+	.menu_vertical .content { position: absolute; margin-left: 30px; width: 175px; }
+	.listado_juegos .menu_vertical.open { width: 220px; }
+	.pager,
+	.listado_juegos .menu_horizontal_top,
+	.listado_juegos .menu_horizontal_bottom,
+	.listado_juegos .pagination,
+	.listado_juegos .contenedor_filas{ margin-left: 32px; padding-left: 5px; }
+	.listado_juegos select{
+		padding: 7px 0;
+		width: 108px;
+		margin: 3px;
+	}
+	.listado_juegos #search_button { width: 90px; margin-left: 0; }
+	.listado_juegos .menu_horizontal_top select{
+		width: 65px;
+		margin-left: 7px;
+		margin-top: -1px;
+	}
+	.listado_juegos .menu_horizontal_top input { width: 250px; }
+	.listado_juegos .menu_horizontal_bottom{
+
+	}
+	.listado_juegos .menu_horizontal_bottom select.skills { width: 80px; }
+	.listado_juegos .contenido{ width: 100%; float: none; }
+	.listado_juegos .menu_horizontal_busqueda { width: 100%; float: none; }
+	.listado_juegos .menu_horizontal_izquierda { width: 100%; float: none; }
+	.listado_juegos .menu_horizontal_derecha { width: 100%; float: none }
+	.listado_juegos .menu_horizontal_orden{
+		width: 100%;		
+		float: none;
+		padding-bottom: 15px;
+	}
+	.elgg-page-default .elgg-page-body > .elgg-inner { padding: 0; }
+	.menu_vertical .content { display: none; }
+	.menu_vertical .toggle { display: block; }
+	.pager{ display: none;}
+}
+@media screen and (max-width:500px) {
+	.listado_juegos .pagination,
+	.listado_juegos .menu_horizontal_top,
+	.listado_juegos .menu_horizontal_bottom,
+	.listado_juegos .contenedor_filas{
+		margin-left: 32px;
+		padding-left: 0px;
+	}
+	.listado_juegos .contenedor_filas { margin-top: 10px; }
+	.listado_juegos select{
+		padding: 7px 0;
+		width: 108px;
+		margin: 3px;
+	}
+	.listado_juegos #search_button { width: 80px; margin-left: 0; }
+	.listado_juegos .menu_horizontal_top select{
+		width: 65px;
+		margin-left: 3px;
+		margin-top: -1px;
+	}
+	.listado_juegos .menu_horizontal_top input{width: 220px;}
+	.listado_juegos select#category{width: 92px;}
+	.listado_juegos select#skill{width: 59px;}
+	.listado_juegos select#metadata{width: 94px;}
+	.listado_juegos select#sort{width: 115px;}
+}
+@media screen and (max-width:440px) {
+	.listado_juegos .pagination,
+	.listado_juegos .menu_horizontal_top,
+	.listado_juegos .menu_horizontal_bottom,
+	.listado_juegos .contenedor_filas { margin-left: 32px; padding-left: 0px; }
+	.listado_juegos .contenedor_filas { margin-top: 10px; }
+	.listado_juegos select{
+		padding: 7px 0;
+		width: 108px;
+		margin: 3px;
+	}
+	.listado_juegos #search_button { width: 55px; margin-left: 0; }
+	.listado_juegos .menu_horizontal_top select { width: 65px; margin-left: 3px; margin-top: -1px; }
+	.listado_juegos .menu_horizontal_top input { width: 143px; }
+	.listado_juegos select#category { width: 72px; }
+	.listado_juegos select#skill { width: 39px; }
+	.listado_juegos select#metadata { width: 64px; }
+	.listado_juegos select#sort { width: 88px; }
+	.listado_juegos .pagination { width: 80%; padding: 0; display: inline-block; margin-bottom: 5px; }
+}
+@media screen and (min-width:768px) {
+	.elgg-heading-site{ margin: -20px -80px 0; font-size: 6em; }
+	.menu_vertical{
+		width: 150px;
+		max-width: 200px;
+		margin: 0 10px 0 0;
+		float: left;
+	}
+	.menu_vertical .menu-title{font-weight: bold;font-size: 1.3em;}
+	.menu_vertical .toggle { display: none; }
+	.menu_vertical .content { display: block; }
+	.menu_vertical ul.nav::after{margin-left: 15px;}
+	.pager,
+	.listado_juegos .pagination,
+	.listado_juegos .menu_horizontal_top,
+	.listado_juegos .menu_horizontal_bottom,
+	.listado_juegos .contenedor_filas { margin-left: 150px; padding-left: 10px;}
+	.listado_juegos .contenedor_filas{margin-top: 10px;}
+	.pager{ margin-left: 670px;}
+	.menu_horizontal_top input { width: 262px; }
+	.listado_juegos select { padding: 7px; margin: 3px; width: 120px; }
+}
+@media screen and (min-width:992px) {
+	.menu_vertical{
+		width: 200px;
+		margin: 0 10px 0 0;
+		float: left;
+	}
+	.pager,
+	.listado_juegos .menu_horizontal_top,
+	.listado_juegos .menu_horizontal_bottom { margin-left: 200px;padding-left: 60px; }
+	.listado_juegos .pagination,
+	.listado_juegos .contenedor_filas{ margin-left: 250px; margin-top: 3em; }
+	.menu_vertical .menu-title { font-size: 1.5em; font-weight: normal; }
+	.menu_horizontal_top li[class*="menu-item-"] input { margin-right: 11px;}
+	.menu_horizontal_top input,
+	.menu_horizontal_bottom select { padding: 7px; margin: 3px 7px; }
+	.menu_horizontal_top select,	
+	.menu_horizontal_bottom select { width: 124px;}
+	.pager{ margin-left: 810px; padding-left: 20px;}
+}
+@media screen and (min-width:1200px) {
+}
