@@ -7,6 +7,7 @@ $english = array(
     /**
      * Menu items and titles
      */
+
     'kpax:all' => "All products",
     'kpax:add' => "Add game",
     'kpax:save:success' => "save product",
@@ -20,14 +21,20 @@ $english = array(
     'kpax:owner' => "owner product",
     'kpax:edit' => "edit product",
     'kpax:game:score' => "Game score",
+    'kpax:game:previous' => "Previous Games",
+    'kpax:game:next' => "Next Games",
 
-    'kPAX:play' => "Games",
     'kPAX:devs' => "Develop",
+    'kPAX:games' => "Games",
+    'kPAX:games:search' => "Games Search",
     'kPAX:add' => "Add game",
-    'kPAX:game:name' => "Game name (*)",
+    'kPAX:game:name' => "Game name",
     'kPAX:game:description' => "Description",
-    'kPAX:game:skills' => "Skills (*)",
-    'kPAX:game:category' => "Game category/ies",
+    'kPAX:game:skills' => "Skills",
+    'kPAX:game:allskills' => "All",
+    'kPAX:game:allcategories' => "All",
+    'kPAX:game:allplatforms' => "All",
+    'kPAX:game:category' => "Category",
     'kPAX:game:platforms' => "Available platforms",
     'kPAX:game:creationDate' => "Creation date",
     'kPAX:game:tags' => 'Related tags',
