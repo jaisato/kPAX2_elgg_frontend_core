@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin_manifest xmlns="http://www.elgg.org/plugin_manifest/1.8">
+	<name>kPAX2 Manage Games</name>
+	<id>kPAX2_manage_games</id>
+	<author>Francesc Pons</author>
+	<version>0.1</version>
+	<blurb>Plug-in for games developers.</blurb>
+	<description>This plug-in offers a CRUD environment for games developers who wish to publish serious games in kPAX2 platform.</description>
+	<category>kPAX2</category>
+	<website>http://www.uoc.edu/</website>
+	<copyright>(C) Universitat Oberta de Catalunya 2018</copyright>
+	<license>GNU General Public License version 2</license>
+	<requires>
+		<type>elgg_release</type>
+		<version>2.2</version>
+		<type>plugin</type>
+		<name>kPAX_core</name>
+		<version>1.5</version>
+	</requires>
+</plugin_manifest>

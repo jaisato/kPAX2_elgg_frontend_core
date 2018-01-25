@@ -139,10 +139,10 @@ class kpaxSrv {
    * getListGames
    * API2
    */
-  public function delGame($campusSession, $idGame) {
-    $body = 'secretSession=' . $campusSession;
-    return $this->service('/game/' . $idGame, 'DELETE');
-  }
+	public function delGame($campusSession, $idGame) {
+		$body = 'secretSession=' . $campusSession;
+		return $this->service('/game/' . $idGame, 'DELETE');
+	}
 
     //TODO (other plugin?)
     public function getScore($gameUid) {
@@ -154,24 +154,25 @@ class kpaxSrv {
    * getListGames
    * API2
    */
-  public function getListGames($campusSession, $idOrderer, $idFilterer, $fields, $values) {
-    $body = 'secretSession=' . $campusSession;
-    $count = count($fields);
-    for ($i = 0; $i < $count; $i++) {
-      $body = $body . "&fields=" . $fields[$i] . "&values=" . $values[$i];
-    }
+	public function getListGames($campusSession, $idOrderer, $idFilterer, $fields, $values) {
+		$body = 'secretSession=' . $campusSession;
+		$count = count($fields);
+		for ($i = 0; $i < $count; $i++) {
+			$body = $body . "&fields=" . $fields[$i] . "&values=" . $values[$i];
+		}
 
-    return $this->service('/game/list?order=' . $idOrderer . '&filter=' . $idFilterer);
-  }
+		return $this->service('/game/list?order=' . $idOrderer . '&filter=' . $idFilterer);
+	}
 
-  /**
-   * getUserListGames
-   * API2
-   */
-  public function getUserListGames($owner, $campusSession) {
-    return $this->service('/game/list?q={owner:' . $owner. '}' );
-
-  }
+	/**
+	* getUserListGames
+	* API2
+	*/
+	// Inloses " " a owner. No filtrava correctament. Mode debug, JSON mal format.
+	// Canvi provisonal. $_SESSION["campusSession"] no es fa servir
+	public function getUserListGames($owner) {
+		return $this->service('/game/list?q={"owner":' . $owner. '}' );
+	}
 
   /**
    * addGame
@@ -186,18 +187,22 @@ class kpaxSrv {
    * $kPAXgame->owner_guid = $owner; // by default, the developer is the logged in user
    * $kPAXgame->tags = $tags;        // save tags as metadata
    */
-  public function addGame($campusSession, $obj) {
-    $body = array (
-      'secretSession' => $campusSession,
-      'owner' => $obj->owner_guid,
-      'name' => $obj->title,
-      'description' => $obj->description,
-      'category' => $obj->idCategory,
-      'tags' => $obj->tags
-    );
+	public function addGame($campusSession, $obj) {
+		$body = array (
+			'secretSession' => $campusSession,  
+			'owner' => $obj->owner_guid,
+			'name' => $obj->title,
+			'description' => $obj->description,
+			'category' => $obj->idCategory,
+			'tags' => $obj->tags
+			/* Cal treue el comentari a les següents línies un cop la col·lecio Games estigui modificada
+			*  'license' = > $obj->license,
+			*  'thumbnail' => $obj->thumbnail
+			*/
+		);
 
-    return $this->service('/game/' . strval($obj->getGUID()), 'POST', $body);
-  }
+		return $this->service('/game/' . strval($obj->getGUID()), 'POST', $body);
+	}
 
     //TODO (other plugin?)
     public function getCategories($campusSession) {

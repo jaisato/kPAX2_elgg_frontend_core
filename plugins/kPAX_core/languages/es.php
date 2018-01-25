@@ -112,6 +112,7 @@ $spanish = array(
     'kPAX:myGames' => "Mis juegos",
     'kPAX:noGames' => "Todavía no tienes juegos en kPAX",
     'kPAX:my_dev_games' => "Mis juegos (desarrollados)",
+    'kPAX:manage_games'=> "Gestionar mis juegos",
     'kpax:tagline' => '¡Juguemos en serio!',
 	'kpax:dragdrop' => 'También puedes arrastrar una imagen desde el escritorio'
 );

@@ -31,11 +31,14 @@ $english = array(
     'kPAX:game:platforms' => "Available platforms",
     'kPAX:game:creationDate' => "Creation date",
     'kPAX:game:tags' => 'Related tags',
+    'kPAX:game:thumbnail' => 'Link to thumbnail in game site web',
+    'kPAX:game:license' => 'License applicable to the use of the game (*)',
     'kPAX:game:csr_file' => "Certificate request file [.csr] (*)",
     'kPAX:game:send' => "Send my game!",
     'kPAX:myGames' => "My games",
     'kPAX:noGames' => "You do not have games in kPAX yet.",
-    'kPAX:my_dev_games' => "My (developed) games",
+    'kPAX:my_dev_games' => "My developed games",
+    'kPAX:manage_games'=> "Manage my Games",
     'kpax:tagline' => 'Play seriously!',
     'kpax:dragdrop' => 'You can drag and drop an image from the desktop'
 );
