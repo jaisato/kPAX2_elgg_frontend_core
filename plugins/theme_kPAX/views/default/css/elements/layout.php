@@ -142,7 +142,7 @@
 	width: 72.525252%;
 }
 .elgg-layout-one-sidebar {
-	background: transparent url(<?php echo elgg_get_site_url(); ?>mod/bright-theme/graphics/sidebar.png) repeat-y right top;
+	background: transparent url(<?php echo elgg_get_site_url(); ?>mod/theme_kPAX/graphics/sidebar.png) repeat-y right top;
 }
 //Això descol·loca el menu lateral
 /*.elgg-layout-two-sidebar .elgg-main {
@@ -150,7 +150,7 @@
 	width: 50.101010%;
 }*/
 .elgg-layout-two-sidebar {
-	background: transparent url(<?php echo elgg_get_site_url(); ?>mod/bright-theme/graphics/sidebar-double.png) repeat-y right top;
+	background: transparent url(<?php echo elgg_get_site_url(); ?>mod/theme_kPAX/graphics/sidebar-double.png) repeat-y right top;
 }
 
 /***** PAGE FOOTER ******/

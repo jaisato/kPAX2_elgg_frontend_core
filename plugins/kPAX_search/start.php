@@ -103,7 +103,7 @@ function kpsearch_page_handler($page) {
         case "edit":
             gatekeeper();
             set_input('guid', $page[1]);
-            include "$pages/edit.php";
+            include "$pages/save.php";
             break;
 
         case 'group':

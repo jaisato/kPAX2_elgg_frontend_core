@@ -251,7 +251,7 @@
 
 .elgg-menu-site-default > .elgg-state-selected > a,
 .elgg-menu-site-default > li:hover > a {
-	background: #fff url(<?php echo elgg_get_site_url(); ?>mod/bright-theme/graphics/menu-button.png) repeat-x left top;
+	background: #fff url(<?php echo elgg_get_site_url(); ?>mod/theme_kPAX/graphics/menu-button.png) repeat-x left top;
 	color: #05d;
 
   border-color: #fff;
@@ -390,7 +390,7 @@
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 
-	background: #fff url(<?php echo elgg_get_site_url(); ?>mod/bright-theme/graphics/button.png) repeat-x left top;
+	background: #fff url(<?php echo elgg_get_site_url(); ?>mod/theme_kPAX/graphics/button.png) repeat-x left top;
   border: 1px solid #bbb;
 	padding: 5px 15px;
 	margin: 1px 0;
@@ -403,7 +403,7 @@
 	text-decoration: none;
 }
 .elgg-menu-page a:active {
-	background-image: url(<?php echo elgg_get_site_url(); ?>mod/bright-theme/graphics/button-active.png);
+	background-image: url(<?php echo elgg_get_site_url(); ?>mod/theme_kPAX/graphics/button-active.png);
   background-position: left bottom;
 }
 .elgg-menu-page .elgg-child-menu {
@@ -545,7 +545,7 @@
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 
-	background: #fff url(<?php echo elgg_get_site_url(); ?>mod/bright-theme/graphics/button.png) repeat-x left top;
+	background: #fff url(<?php echo elgg_get_site_url(); ?>mod/theme_kPAX/graphics/button.png) repeat-x left top;
   border: 1px solid #bbb;
 	padding: 5px 15px;
 	margin: 1px 0;
@@ -558,7 +558,7 @@
 	text-decoration: none;
 }
 .elgg-menu-owner-block li a:active {
-	background-image: url(<?php echo elgg_get_site_url(); ?>mod/bright-theme/graphics/button-active.png);
+	background-image: url(<?php echo elgg_get_site_url(); ?>mod/theme_kPAX/graphics/button-active.png);
   background-position: left bottom;
 }
 

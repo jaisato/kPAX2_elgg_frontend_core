@@ -16,7 +16,6 @@ elgg_register_menu_item('title', array(
                  'link_class' => 'elgg-button elgg-button-action',
              ));
 
-
 $body .= elgg_view('kpax/devs_explanations');
 
 $params = array(

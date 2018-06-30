@@ -44,7 +44,7 @@
 }
 
 .elgg-button:active {
-	background-image: url(<?php echo elgg_get_site_url(); ?>mod/bright-theme/graphics/button-active.png);
+	background-image: url(<?php echo elgg_get_site_url(); ?>mod/theme_kPAX/graphics/button-active.png);
   background-position: left bottom;
 
 	-webkit-box-shadow: inset 0px 1px 2px rgba(0, 0, 0, 0.5);

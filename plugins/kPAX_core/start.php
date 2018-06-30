@@ -12,7 +12,7 @@ function kpax_init() {
 
     elgg_register_page_handler('kpax', 'kpax_page_handler');
 
-    elgg_register_plugin_hook_handler('g:view', 'object', 'kpax_url');
+    elgg_register_entity_url_handler('object', 'kpax', 'kpax_url');
 
     elgg_register_entity_type('object', 'kpax');
 
@@ -30,6 +30,13 @@ function kpax_init() {
     // actions
     elgg_register_action('kpax/save', "$root/actions/kpax/save.php");
     elgg_register_action('kpax/delete', "$root/actions/kpax/delete.php");
+
+    // menus
+    elgg_register_menu_item('site', array(
+        'name' => 'play',
+        'text' => elgg_echo('kPAX:play'),
+        'href' => 'kpax/play'
+    ));
 
     elgg_register_menu_item('site', array(
         'name' => 'developers',
@@ -80,7 +87,7 @@ function kpax_page_handler($page) {
 
     elgg_push_breadcrumb(elgg_echo('kPAX:play'), 'kpax/play');
     elgg_push_breadcrumb(elgg_echo('kPAX:devs'), 'kpax/devs');
-    elgg_push_breadcrumb(elgg_echo('Games'), 'kpax/all');   //NOU  ??
+    elgg_push_breadcrumb(elgg_echo('Games'), 'kpax/all');   //NOU  ???
 
     // old group usernames
     if (substr_count($page[0], 'group:')) {
@@ -100,6 +107,9 @@ function kpax_page_handler($page) {
     $pages = dirname(__FILE__) . '/pages/kpax';
 
     switch ($page[0]) {
+        case "all":
+            include "$pages/all.php";
+            break;
 
         case "owner":
             include "$pages/owner.php";
@@ -123,7 +133,7 @@ function kpax_page_handler($page) {
         case "edit":
             gatekeeper();
             set_input('guid', $page[1]);
-            include "$pages/edit.php";
+            include "$pages/save.php";
             break;
 
         case 'group':
@@ -163,10 +173,7 @@ function kpax_page_handler($page) {
  *
  * @param string $page
  */
-//function kpax_url_forwarder($page) {
-function kpax_url_forwarder($hook, $type, $url, $params) {
-    $page = $params['entity'];
-
+function kpax_url_forwarder($page) {
     global $CONFIG;
 
     if (!isset($page[1])) {

@@ -12,29 +12,4 @@
 		<type>elgg_release</type>
 		<version>2.0</version>
 	</requires>
-	<requires>
-		<type>priority</type>
-		<priority>after</priority>
-		<plugin>html5</plugin>
-	</requires>
-	<requires>
-		<type>priority</type>
-		<priority>after</priority>
-		<plugin>loginrequired</plugin>
-	</requires>
-	<requires>
-		<type>priority</type>
-		<priority>after</priority>
-		<plugin>apiadmin</plugin>
-	</requires>
-	<requires>
-		<type>priority</type>
-		<priority>after</priority>
-		<plugin>web_services</plugin>
-	</requires>	
-	<requires>
-		<type>priority</type>
-		<priority>after</priority>
-		<plugin>developers</plugin>
-	</requires>	
 </plugin_manifest>
