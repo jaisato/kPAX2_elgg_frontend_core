@@ -929,24 +929,16 @@ class TestOAuthServer extends OAuthServer {
 class KpaxOAuthSignatureMethod_RSA_SHA1 extends OAuthSignatureMethod_RSA_SHA1 {
 
     public function fetch_private_cert(&$request) {
-        $cert = <<<EOD
------BEGIN PRIVATE KEY-----
-MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBALRiMLAh9iimur8V
-A7qVvdqxevEuUkW4K+2KdMXmnQbG9Aa7k7eBjK1S+0LYmVjPKlJGNXHDGuy5Fw/d
-7rjVJ0BLB+ubPK8iA/Tw3hLQgXMRRGRXXCn8ikfuQfjUS1uZSatdLB81mydBETlJ
-hI6GH4twrbDJCR2Bwy/XWXgqgGRzAgMBAAECgYBYWVtleUzavkbrPjy0T5FMou8H
-X9u2AC2ry8vD/l7cqedtwMPp9k7TubgNFo+NGvKsl2ynyprOZR1xjQ7WgrgVB+mm
-uScOM/5HVceFuGRDhYTCObE+y1kxRloNYXnx3ei1zbeYLPCHdhxRYW7T0qcynNmw
-rn05/KO2RLjgQNalsQJBANeA3Q4Nugqy4QBUCEC09SqylT2K9FrrItqL2QKc9v0Z
-zO2uwllCbg0dwpVuYPYXYvikNHHg+aCWF+VXsb9rpPsCQQDWR9TT4ORdzoj+Nccn
-qkMsDmzt0EfNaAOwHOmVJ2RVBspPcxt5iN4HI7HNeG6U5YsFBb+/GZbgfBT3kpNG
-WPTpAkBI+gFhjfJvRw38n3g/+UeAkwMI2TJQS4n8+hid0uus3/zOjDySH3XHCUno
-cn1xOJAyZODBo47E+67R4jV1/gzbAkEAklJaspRPXP877NssM5nAZMU0/O/NGCZ+
-3jPgDUno6WbJn5cqm8MqWhW1xGkImgRk+fkDBquiq4gPiT898jusgQJAd5Zrr6Q8
-AO/0isr/3aa6O6NLQxISLKcPDk2NOccAfS/xOtfOz4sJYM3+Bs4Io9+dZGSDCA54
-Lw03eHTNQghS0A==
------END PRIVATE KEY-----
-EOD;
+        // SECURITY FIX: Private key must be loaded from a secure file, never hardcoded in source
+        $certPath = elgg_get_plugin_setting('private_key_path', 'kPAX_core');
+        if (empty($certPath) || !file_exists($certPath)) {
+            error_log('kPAX: CRITICAL - Private key file not configured or missing');
+            throw new OAuthException('OAuth private key not configured');
+        }
+        $cert = file_get_contents($certPath);
+        if ($cert === false) {
+            throw new OAuthException('Failed to read OAuth private key');
+        }
         return $cert;
     }
 
@@ -958,17 +950,35 @@ EOD;
 
 class kpaxCrypt {
 
+    /**
+     * SECURITY FIX: Replaced deprecated mcrypt with openssl, use random IV,
+     * and load secret key from plugin settings instead of hardcoding.
+     */
     static function crypt($str) {
-        // set keys
-        $secret_key = "1234567890123456";
-        $iv = "abcdefghijklmnop";
-        $plaintext = $str;
-        // encryption
-        $enc = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $secret_key, $plaintext, MCRYPT_MODE_CBC, $iv);
-        // base64 encoding
+        $secret_key = elgg_get_plugin_setting('encryption_key', 'kPAX_core');
+        if (empty($secret_key)) {
+            error_log('kPAX: WARNING - Encryption key not configured');
+            return false;
+        }
+        $cipher = 'aes-128-cbc';
+        $ivlen = openssl_cipher_iv_length($cipher);
+        $iv = openssl_random_pseudo_bytes($ivlen);
+        $enc = openssl_encrypt($str, $cipher, $secret_key, OPENSSL_RAW_DATA, $iv);
+        // Prepend IV for decryption
+        return base64_encode($iv . $enc);
+    }
 
-        $enc64 = base64_encode($enc);
-        return $enc64;
+    static function decrypt($enc64) {
+        $secret_key = elgg_get_plugin_setting('encryption_key', 'kPAX_core');
+        if (empty($secret_key)) {
+            return false;
+        }
+        $cipher = 'aes-128-cbc';
+        $ivlen = openssl_cipher_iv_length($cipher);
+        $data = base64_decode($enc64);
+        $iv = substr($data, 0, $ivlen);
+        $enc = substr($data, $ivlen);
+        return openssl_decrypt($enc, $cipher, $secret_key, OPENSSL_RAW_DATA, $iv);
     }
 
 }

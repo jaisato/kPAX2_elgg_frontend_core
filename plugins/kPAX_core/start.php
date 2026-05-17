@@ -63,7 +63,8 @@ function kpax_init() {
         }
     }
 
-    elgg_ws_expose_function("user.auth", "auth_user", array("username" => array('type' => 'String', 'required' => true), "password" => array('type' => 'String', 'required' => true)), 'Auth user elgg', 'GET', true, false);
+    // SECURITY FIX: Changed from GET to POST to prevent password exposure in URL/logs
+    elgg_ws_expose_function("user.auth", "auth_user", array("username" => array('type' => 'String', 'required' => true), "password" => array('type' => 'String', 'required' => true)), 'Auth user elgg', 'POST', true, false);
 
     function auth_sign($username="") {
 
