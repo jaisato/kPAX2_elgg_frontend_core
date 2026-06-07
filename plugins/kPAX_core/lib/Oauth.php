@@ -929,24 +929,14 @@ class TestOAuthServer extends OAuthServer {
 class KpaxOAuthSignatureMethod_RSA_SHA1 extends OAuthSignatureMethod_RSA_SHA1 {
 
     public function fetch_private_cert(&$request) {
-        $cert = <<<EOD
------BEGIN PRIVATE KEY-----
-MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBALRiMLAh9iimur8V
-A7qVvdqxevEuUkW4K+2KdMXmnQbG9Aa7k7eBjK1S+0LYmVjPKlJGNXHDGuy5Fw/d
-7rjVJ0BLB+ubPK8iA/Tw3hLQgXMRRGRXXCn8ikfuQfjUS1uZSatdLB81mydBETlJ
-hI6GH4twrbDJCR2Bwy/XWXgqgGRzAgMBAAECgYBYWVtleUzavkbrPjy0T5FMou8H
-X9u2AC2ry8vD/l7cqedtwMPp9k7TubgNFo+NGvKsl2ynyprOZR1xjQ7WgrgVB+mm
-uScOM/5HVceFuGRDhYTCObE+y1kxRloNYXnx3ei1zbeYLPCHdhxRYW7T0qcynNmw
-rn05/KO2RLjgQNalsQJBANeA3Q4Nugqy4QBUCEC09SqylT2K9FrrItqL2QKc9v0Z
-zO2uwllCbg0dwpVuYPYXYvikNHHg+aCWF+VXsb9rpPsCQQDWR9TT4ORdzoj+Nccn
-qkMsDmzt0EfNaAOwHOmVJ2RVBspPcxt5iN4HI7HNeG6U5YsFBb+/GZbgfBT3kpNG
-WPTpAkBI+gFhjfJvRw38n3g/+UeAkwMI2TJQS4n8+hid0uus3/zOjDySH3XHCUno
-cn1xOJAyZODBo47E+67R4jV1/gzbAkEAklJaspRPXP877NssM5nAZMU0/O/NGCZ+
-3jPgDUno6WbJn5cqm8MqWhW1xGkImgRk+fkDBquiq4gPiT898jusgQJAd5Zrr6Q8
-AO/0isr/3aa6O6NLQxISLKcPDk2NOccAfS/xOtfOz4sJYM3+Bs4Io9+dZGSDCA54
-Lw03eHTNQghS0A==
------END PRIVATE KEY-----
-EOD;
+        // SECURITY FIX: Private keys must NEVER be hardcoded in source code.
+        // Load from a file outside the web root with restricted permissions.
+        $cert_path = getenv('KPAX_PRIVATE_KEY_PATH');
+        if (empty($cert_path) || !file_exists($cert_path)) {
+            error_log("ERROR: Private key file not found. Set KPAX_PRIVATE_KEY_PATH environment variable.");
+            return false;
+        }
+        $cert = file_get_contents($cert_path);
         return $cert;
     }
 
@@ -959,15 +949,20 @@ EOD;
 class kpaxCrypt {
 
     static function crypt($str) {
-        // set keys
-        $secret_key = "1234567890123456";
-        $iv = "abcdefghijklmnop";
+        // SECURITY FIX: Use openssl instead of deprecated mcrypt.
+        // Key and IV must not be hardcoded - load from secure config.
+        $secret_key = getenv('KPAX_ENCRYPTION_KEY');
+        if (empty($secret_key)) {
+            error_log("ERROR: KPAX_ENCRYPTION_KEY environment variable not set");
+            return false;
+        }
+        // Generate a random IV for each encryption
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-128-cbc'));
         $plaintext = $str;
-        // encryption
-        $enc = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $secret_key, $plaintext, MCRYPT_MODE_CBC, $iv);
-        // base64 encoding
-
-        $enc64 = base64_encode($enc);
+        // encryption using openssl (mcrypt is deprecated and removed in PHP 7.2+)
+        $enc = openssl_encrypt($plaintext, 'aes-128-cbc', $secret_key, OPENSSL_RAW_DATA, $iv);
+        // Prepend IV so it can be used for decryption
+        $enc64 = base64_encode($iv . $enc);
         return $enc64;
     }
 

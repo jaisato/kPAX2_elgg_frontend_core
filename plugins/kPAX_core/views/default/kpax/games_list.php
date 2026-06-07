@@ -8,7 +8,8 @@ if ($vars['objGameList']) {
         <hr>
         <?php
         foreach ($vars['objGameList'] as $game) {
-            echo "<p>" . $game->guid . " - " . "<a href=view/" . $game->guid . "> $game->name </a>" . $game->category . "</p>";
+            // SECURITY FIX: Escape output to prevent XSS
+            echo "<p>" . htmlspecialchars($game->guid, ENT_QUOTES, 'UTF-8') . " - " . "<a href=\"view/" . htmlspecialchars($game->guid, ENT_QUOTES, 'UTF-8') . "\"> " . htmlspecialchars($game->name, ENT_QUOTES, 'UTF-8') . " </a>" . htmlspecialchars($game->category, ENT_QUOTES, 'UTF-8') . "</p>";
         }
         ?>
     </div>

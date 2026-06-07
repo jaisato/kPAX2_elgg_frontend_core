@@ -8,8 +8,9 @@
  */
 
 class kpaxOauth {
-    const URL = 'http://kpax.uoc.es/elgg/';
-    const API_URL = 'http://kpax.uoc.es/webapps/svrKpax/';
+    // SECURITY FIX: Use HTTPS to prevent man-in-the-middle attacks
+    const URL = 'https://kpax.uoc.es/elgg/';
+    const API_URL = 'https://kpax.uoc.es/webapps/svrKpax/';
     const VERSION = '1.0';
     const FORMAT = 'json';
 
@@ -40,7 +41,8 @@ class kpaxOauth {
   
         $consumer = new OAuthConsumer($this->key, $this->secret);
 
-        $api_endpoint = 'http://localhost:8080/webapps/svrKpax/user/sign/elgg';
+        // SECURITY FIX: Use HTTPS even for localhost in production
+        $api_endpoint = 'https://localhost:8080/webapps/svrKpax/user/sign/elgg';
         
 
         $parameters = null;
