@@ -70,7 +70,7 @@ if($response['status'] == 200) {
 	$orderBy = ' CASE ';
 	for($i = 0, $size = sizeof($gameList); $i < $size; ++$i)
 	{
-		$idGame = $gameList[$i]->idGame;
+		$idGame = (int) $gameList[$i]->idGame; // Cast to int to prevent SQL injection
 
 		$where[] = $idGame;
 		$orderBy = $orderBy . " WHEN e.guid = " . $idGame . " THEN " . ($i + 1);

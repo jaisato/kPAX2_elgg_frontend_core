@@ -114,7 +114,7 @@ if (!class_exists('OAuthSignatureMethod')) {
             // Avoid a timing leak with a (hopefully) time insensitive compare
             $result = 0;
             for ($i = 0; $i < strlen($signature); $i++) {
-                $result |= ord($built{$i}) ^ ord($signature{$i});
+                $result |= ord($built[$i]) ^ ord($signature[$i]);
             }
 
             return $result == 0;
@@ -239,8 +239,10 @@ if (!class_exists('OAuthSignatureMethod_RSA_SHA1')) {
             // Sign using the key
             $ok = openssl_sign($base_string, $signature, $privatekeyid);
 
-            // Release the key resource
-            openssl_free_key($privatekeyid);
+            // openssl_free_key is deprecated in PHP 8.0+ (keys are freed automatically)
+            if (PHP_VERSION_ID < 80000) {
+                openssl_free_key($privatekeyid);
+            }
 
             return base64_encode($signature);
         }
@@ -259,8 +261,10 @@ if (!class_exists('OAuthSignatureMethod_RSA_SHA1')) {
             // Check the computed signature against the one passed in the query
             $ok = openssl_verify($base_string, $decoded_sig, $publickeyid);
 
-            // Release the key resource
-            openssl_free_key($publickeyid);
+            // openssl_free_key is deprecated in PHP 8.0+ (keys are freed automatically)
+            if (PHP_VERSION_ID < 80000) {
+                openssl_free_key($publickeyid);
+            }
 
             return $ok == 1;
         }
@@ -517,10 +521,8 @@ if (!class_exists('OAuthRequest')) {
          * util function: current nonce
          */
         private static function generate_nonce() {
-            $mt = microtime();
-            $rand = mt_rand();
-
-            return md5($mt . $rand); // md5s look nicer than numbers
+            // Use cryptographically secure random bytes instead of md5(microtime + mt_rand)
+            return bin2hex(random_bytes(16));
         }
 
     }
@@ -929,24 +931,16 @@ class TestOAuthServer extends OAuthServer {
 class KpaxOAuthSignatureMethod_RSA_SHA1 extends OAuthSignatureMethod_RSA_SHA1 {
 
     public function fetch_private_cert(&$request) {
-        $cert = <<<EOD
------BEGIN PRIVATE KEY-----
-MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBALRiMLAh9iimur8V
-A7qVvdqxevEuUkW4K+2KdMXmnQbG9Aa7k7eBjK1S+0LYmVjPKlJGNXHDGuy5Fw/d
-7rjVJ0BLB+ubPK8iA/Tw3hLQgXMRRGRXXCn8ikfuQfjUS1uZSatdLB81mydBETlJ
-hI6GH4twrbDJCR2Bwy/XWXgqgGRzAgMBAAECgYBYWVtleUzavkbrPjy0T5FMou8H
-X9u2AC2ry8vD/l7cqedtwMPp9k7TubgNFo+NGvKsl2ynyprOZR1xjQ7WgrgVB+mm
-uScOM/5HVceFuGRDhYTCObE+y1kxRloNYXnx3ei1zbeYLPCHdhxRYW7T0qcynNmw
-rn05/KO2RLjgQNalsQJBANeA3Q4Nugqy4QBUCEC09SqylT2K9FrrItqL2QKc9v0Z
-zO2uwllCbg0dwpVuYPYXYvikNHHg+aCWF+VXsb9rpPsCQQDWR9TT4ORdzoj+Nccn
-qkMsDmzt0EfNaAOwHOmVJ2RVBspPcxt5iN4HI7HNeG6U5YsFBb+/GZbgfBT3kpNG
-WPTpAkBI+gFhjfJvRw38n3g/+UeAkwMI2TJQS4n8+hid0uus3/zOjDySH3XHCUno
-cn1xOJAyZODBo47E+67R4jV1/gzbAkEAklJaspRPXP877NssM5nAZMU0/O/NGCZ+
-3jPgDUno6WbJn5cqm8MqWhW1xGkImgRk+fkDBquiq4gPiT898jusgQJAd5Zrr6Q8
-AO/0isr/3aa6O6NLQxISLKcPDk2NOccAfS/xOtfOz4sJYM3+Bs4Io9+dZGSDCA54
-Lw03eHTNQghS0A==
------END PRIVATE KEY-----
-EOD;
+        // SECURITY: Private key must be loaded from a secure file outside the web root,
+        // not hardcoded in source code. Configure KPAX_PRIVATE_KEY_PATH in your environment.
+        $keyPath = getenv('KPAX_PRIVATE_KEY_PATH');
+        if (!$keyPath || !file_exists($keyPath)) {
+            throw new OAuthException('Private key file not configured or not found. Set KPAX_PRIVATE_KEY_PATH environment variable.');
+        }
+        $cert = file_get_contents($keyPath);
+        if ($cert === false) {
+            throw new OAuthException('Failed to read private key file.');
+        }
         return $cert;
     }
 
@@ -959,15 +953,21 @@ EOD;
 class kpaxCrypt {
 
     static function crypt($str) {
-        // set keys
-        $secret_key = "1234567890123456";
-        $iv = "abcdefghijklmnop";
+        // SECURITY: Key and IV must be loaded from environment, not hardcoded.
+        // Uses openssl_encrypt instead of deprecated mcrypt_encrypt.
+        $secret_key = getenv('KPAX_ENCRYPTION_KEY');
+        if (!$secret_key) {
+            throw new \RuntimeException('KPAX_ENCRYPTION_KEY environment variable is not set.');
+        }
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-128-cbc'));
         $plaintext = $str;
-        // encryption
-        $enc = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $secret_key, $plaintext, MCRYPT_MODE_CBC, $iv);
-        // base64 encoding
-
-        $enc64 = base64_encode($enc);
+        // encryption using OpenSSL (mcrypt is deprecated since PHP 7.1, removed in 7.2)
+        $enc = openssl_encrypt($plaintext, 'aes-128-cbc', $secret_key, OPENSSL_RAW_DATA, $iv);
+        if ($enc === false) {
+            throw new \RuntimeException('Encryption failed.');
+        }
+        // Prepend IV to ciphertext so it can be used for decryption
+        $enc64 = base64_encode($iv . $enc);
         return $enc64;
     }
 

@@ -63,7 +63,7 @@ function kpax_init() {
         }
     }
 
-    elgg_ws_expose_function("user.auth", "auth_user", array("username" => array('type' => 'String', 'required' => true), "password" => array('type' => 'String', 'required' => true)), 'Auth user elgg', 'GET', true, false);
+    elgg_ws_expose_function("user.auth", "auth_user", array("username" => array('type' => 'String', 'required' => true), "password" => array('type' => 'String', 'required' => true)), 'Auth user elgg', 'POST', true, false);
 
     function auth_sign($username="") {
 

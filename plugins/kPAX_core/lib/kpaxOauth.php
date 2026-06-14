@@ -16,8 +16,9 @@ class kpaxOauth {
     // Oauth
 
     private $oauth;
+    // SECURITY: Key and secret should be loaded from configuration, not hardcoded
     private $key = 'kpax.module';
-    private $secret = '__unused__';
+    private $secret = '__unused__'; // TODO: Load from environment
 
     public function setKeySecret($key = '',$secret = ''){
         $this->key = $key;
@@ -40,7 +41,8 @@ class kpaxOauth {
   
         $consumer = new OAuthConsumer($this->key, $this->secret);
 
-        $api_endpoint = 'http://localhost:8080/webapps/svrKpax/user/sign/elgg';
+        // SECURITY: Test endpoint should not be in production code; use HTTPS in production
+        $api_endpoint = 'https://localhost:8080/webapps/svrKpax/user/sign/elgg';
         
 
         $parameters = null;
