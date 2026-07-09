@@ -6,6 +6,10 @@
 #
 #################################################
 
+# Database credentials (taken from the environment; ELGG_DB_PASSWORD is required)
+ELGG_DB_USER="${ELGG_DB_USER:-elgguser}"
+ELGG_DB_PASSWORD="${ELGG_DB_PASSWORD:?Set ELGG_DB_PASSWORD before running this script}"
+
 # Recomended total system update & upgrade
 clear
 echo “System Update”
@@ -48,7 +52,7 @@ read -rsp $'Press any key to continue...\n' -n1
 # Create MySQL Database & tables for Elgg
 clear
 echo "About to Create MySQL Database & Tables for Elgg"
-mysql -u root -p -e "CREATE DATABASE elggDB;CREATE USER elgguser IDENTIFIED BY 'elggpassword';GRANT ALL ON elggDB.* TO elgguser;"
+mysql -u root -p -e "CREATE DATABASE elggDB;CREATE USER ${ELGG_DB_USER} IDENTIFIED BY '${ELGG_DB_PASSWORD}';GRANT ALL ON elggDB.* TO ${ELGG_DB_USER};"
 
 mysql -u root -p elggDB -e \
 "CREATE TABLE elggDB_access_collection_membership (user_guid int(11) NOT NULL,access_collection_id int(11) NOT NULL, PRIMARY KEY (user_guid,access_collection_id)) ENGINE=MyISAM DEFAULT CHARSET=utf8; CREATE TABLE elggDB_access_collections (id int(11) NOT NULL AUTO_INCREMENT,name text NOT NULL,owner_guid bigint(20) unsigned NOT NULL,site_guid bigint(20) unsigned NOT NULL DEFAULT '0',PRIMARY KEY (id),KEY owner_guid (owner_guid),KEY site_guid (site_guid)) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_annotations (id int(11) NOT NULL AUTO_INCREMENT,entity_guid bigint(20) unsigned NOT NULL,name_id int(11) NOT NULL,value_id int(11) NOT NULL,value_type enum('integer','text') NOT NULL,owner_guid bigint(20) unsigned NOT NULL,access_id int(11) NOT NULL,time_created int(11) NOT NULL,enabled enum('yes','no') NOT NULL DEFAULT 'yes',PRIMARY KEY (id),KEY entity_guid (entity_guid),KEY name_id (name_id),KEY value_id (value_id),KEY owner_guid (owner_guid),KEY access_id (access_id)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_api_users (id int(11) NOT NULL AUTO_INCREMENT,site_guid bigint(20) unsigned DEFAULT NULL,api_key varchar(40) DEFAULT NULL,secret varchar(40) NOT NULL,active int(1) DEFAULT '1',PRIMARY KEY (id),UNIQUE KEY api_key (api_key)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_config (name varchar(255) NOT NULL,value text NOT NULL,site_guid int(11) NOT NULL,PRIMARY KEY (name,site_guid)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_datalists (name varchar(255) NOT NULL,value text NOT NULL,PRIMARY KEY (name)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_entities (guid bigint(20) unsigned NOT NULL AUTO_INCREMENT,type enum('object','user','group','site') NOT NULL,subtype int(11) DEFAULT NULL,owner_guid bigint(20) unsigned NOT NULL,site_guid bigint(20) unsigned NOT NULL,container_guid bigint(20) unsigned NOT NULL,access_id int(11) NOT NULL,time_created int(11) NOT NULL,time_updated int(11) NOT NULL,last_action int(11) NOT NULL DEFAULT '0',enabled enum('yes','no') NOT NULL DEFAULT 'yes',PRIMARY KEY (guid),KEY type (type),KEY subtype (subtype),KEY owner_guid (owner_guid),KEY site_guid (site_guid),KEY container_guid (container_guid),KEY access_id (access_id),KEY time_created (time_created),KEY time_updated (time_updated)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8; CREATE TABLE elggDB_entity_relationships (id int(11) NOT NULL AUTO_INCREMENT,guid_one bigint(20) unsigned NOT NULL,relationship varchar(50) NOT NULL,guid_two bigint(20) unsigned NOT NULL,time_created int(11) NOT NULL,PRIMARY KEY (id),UNIQUE KEY guid_one (guid_one,relationship,guid_two),KEY relationship (relationship),KEY guid_two (guid_two)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_entity_subtypes (id int(11) NOT NULL AUTO_INCREMENT,type enum('object','user','group','site') NOT NULL,subtype varchar(50) NOT NULL,class varchar(50) NOT NULL DEFAULT '',PRIMARY KEY (id),UNIQUE KEY type (type,subtype)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  "
@@ -85,8 +89,8 @@ echo "About to configure settings.php"
 cp /var/www/html/elgg-2.1.1/vendor/elgg/elgg/elgg-config/settings.example.php /var/www/html/kpax2/elgg-config/settings.php
 cd /var/www/html/kpax2/elgg-config/
 sed -i 's/{{timezone}}/Europe\/Amsterdam/g' settings.php
-sed -i 's/{{dbuser}}/elgguser/g' settings.php
-sed -i 's/{{dbpassword}}/elggpassword/g' settings.php
+sed -i "s|{{dbuser}}|${ELGG_DB_USER}|g" settings.php
+sed -i "s|{{dbpassword}}|${ELGG_DB_PASSWORD}|g" settings.php
 sed -i 's/{{dbname}}/elggDB/g' settings.php
 sed -i 's/{{dbhost}}/localhost/g' settings.php
 sed -i 's/{{dbprefix}}/elggDB_/g' settings.php
