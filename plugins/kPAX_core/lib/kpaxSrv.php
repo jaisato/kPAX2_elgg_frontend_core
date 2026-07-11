@@ -20,7 +20,7 @@ class kpaxSrv {
   public function __construct($username) { //TODO: ha de ser kPAXadmin o admin per defecte???
     $this->oauthKpax = new kpaxOauth();
 
-    $this->userName = str_replace("uoc.edu_", "", $userName); //Case UOC login
+    $this->userName = str_replace("uoc.edu_", "", $username); //Case UOC login
     $body = 'username=' . trim($this->userName . "&apikey=" . $this->apiKey);
 
     //TODO: user/sign/elgg
