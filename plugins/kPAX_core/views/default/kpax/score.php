@@ -6,7 +6,9 @@ if ($vars['objScore']) {
     <div class='score' style='border:1px solid #cccccc; padding:5px; padding-left: 12px; text-align:left;width: 220px;'>
         <?php
         foreach ($vars['objScore'] as $value) {
-            echo "<p>" . $value->nameUser . " - " . $value->points . "</p>";
+            $nameUser = htmlspecialchars($value->nameUser, ENT_QUOTES, 'UTF-8');
+            $points = htmlspecialchars($value->points, ENT_QUOTES, 'UTF-8');
+            echo "<p>" . $nameUser . " - " . $points . "</p>";
         }
         ?>
     </div>

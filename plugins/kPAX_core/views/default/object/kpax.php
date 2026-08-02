@@ -86,7 +86,7 @@ if ($full) {
         'class' => 'kpax-post',
             ));
 
-    $header = elgg_view_title($objGamex§->name);
+    $header = elgg_view_title($objGame->name);
 
     $params = array(
         'entity' => $kpax,
