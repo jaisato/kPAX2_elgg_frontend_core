@@ -111,10 +111,25 @@ if (!class_exists('OAuthSignatureMethod')) {
                 return false;
             }
 
-            // Avoid a timing leak with a (hopefully) time insensitive compare
+            // Avoid a timing leak with a (hopefully) time insensitive compare.
+            //
+            // $built{$i} is the curly-brace string offset, deprecated in PHP 7.4
+            // and removed in 8.0 - so this file was a parse error on any modern
+            // PHP, which takes the whole plugin down with it. Square brackets
+            // mean exactly the same thing and always have.
+            //
+            // The loop also walked strlen($signature) rather than the shorter of
+            // the two, so a signature longer than what was built read past the
+            // end of $built. On PHP 8 that is an "Uninitialized string offset"
+            // error rather than the empty string PHP 5 returned, i.e. a
+            // verification failure that throws instead of returning false.
+            if (strlen($built) !== strlen($signature)) {
+                return false;
+            }
+
             $result = 0;
             for ($i = 0; $i < strlen($signature); $i++) {
-                $result |= ord($built{$i}) ^ ord($signature{$i});
+                $result |= ord($built[$i]) ^ ord($signature[$i]);
             }
 
             return $result == 0;
@@ -517,10 +532,29 @@ if (!class_exists('OAuthRequest')) {
          * util function: current nonce
          */
         private static function generate_nonce() {
-            $mt = microtime();
-            $rand = mt_rand();
+            // The nonce is what stops a captured request from being replayed,
+            // so it has to be unpredictable. md5(microtime() . mt_rand()) is
+            // neither part: microtime() is the clock, and mt_rand() is a
+            // Mersenne Twister whose entire future output can be reconstructed
+            // from a few hundred observed values - and every signed request
+            // publishes one. A CSPRNG is what this needs.
+            if (function_exists('random_bytes')) {
+                return bin2hex(random_bytes(16));
+            }
 
-            return md5($mt . $rand); // md5s look nicer than numbers
+            if (function_exists('openssl_random_pseudo_bytes')) {
+                $strong = false;
+                $bytes = openssl_random_pseudo_bytes(16, $strong);
+
+                if ($strong) {
+                    return bin2hex($bytes);
+                }
+            }
+
+            // Last resort on a PHP too old for either. Still weak - it is the
+            // old behaviour - but it is no longer the path anything modern
+            // takes.
+            return md5(microtime() . mt_rand());
         }
 
     }
