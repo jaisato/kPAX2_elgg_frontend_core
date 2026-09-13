@@ -51,7 +51,23 @@ read -rsp $'Press any key to continue...\n' -n1
 # Create MySQL Database & tables for Elgg
 clear
 echo "About to Create MySQL Database & Tables for Elgg"
-mysql -u root -p -e "CREATE DATABASE elggDB;CREATE USER elgguser IDENTIFIED BY 'elggpassword';GRANT ALL ON elggDB.* TO elgguser;"
+# The database password used to be the literal string 'elggpassword', written
+# both into this CREATE USER and into settings.php further down. Every site ever
+# installed from this script therefore shared one password, and it is published
+# in this repository - so knowing the host was enough to reach the database.
+#
+# It is generated per install instead. Hex on purpose: the value is substituted
+# into settings.php with sed below, and a password containing / or & would be
+# read by sed as syntax. 24 bytes of hex is 192 bits either way.
+#
+# ELGG_DB_PASSWORD can be set beforehand to supply your own.
+ELGG_DB_PASSWORD="${ELGG_DB_PASSWORD:-$(openssl rand -hex 24)}"
+
+# 'elgguser'@'localhost', not the bare 'elgguser' this had. MySQL expands a
+# bare name to elgguser@'%' - reachable from any host that can open port 3306.
+# Elgg connects over localhost (settings.php sets dbhost to it below), so there
+# is nothing to gain from the wider grant.
+mysql -u root -p -e "CREATE DATABASE elggDB;CREATE USER 'elgguser'@'localhost' IDENTIFIED BY '${ELGG_DB_PASSWORD}';GRANT ALL ON elggDB.* TO 'elgguser'@'localhost';"
 
 mysql -u root -p elggDB -e \
 "CREATE TABLE elggDB_access_collection_membership (user_guid int(11) NOT NULL,access_collection_id int(11) NOT NULL, PRIMARY KEY (user_guid,access_collection_id)) ENGINE=MyISAM DEFAULT CHARSET=utf8; CREATE TABLE elggDB_access_collections (id int(11) NOT NULL AUTO_INCREMENT,name text NOT NULL,owner_guid bigint(20) unsigned NOT NULL,site_guid bigint(20) unsigned NOT NULL DEFAULT '0',PRIMARY KEY (id),KEY owner_guid (owner_guid),KEY site_guid (site_guid)) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_annotations (id int(11) NOT NULL AUTO_INCREMENT,entity_guid bigint(20) unsigned NOT NULL,name_id int(11) NOT NULL,value_id int(11) NOT NULL,value_type enum('integer','text') NOT NULL,owner_guid bigint(20) unsigned NOT NULL,access_id int(11) NOT NULL,time_created int(11) NOT NULL,enabled enum('yes','no') NOT NULL DEFAULT 'yes',PRIMARY KEY (id),KEY entity_guid (entity_guid),KEY name_id (name_id),KEY value_id (value_id),KEY owner_guid (owner_guid),KEY access_id (access_id)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_api_users (id int(11) NOT NULL AUTO_INCREMENT,site_guid bigint(20) unsigned DEFAULT NULL,api_key varchar(40) DEFAULT NULL,secret varchar(40) NOT NULL,active int(1) DEFAULT '1',PRIMARY KEY (id),UNIQUE KEY api_key (api_key)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_config (name varchar(255) NOT NULL,value text NOT NULL,site_guid int(11) NOT NULL,PRIMARY KEY (name,site_guid)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_datalists (name varchar(255) NOT NULL,value text NOT NULL,PRIMARY KEY (name)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_entities (guid bigint(20) unsigned NOT NULL AUTO_INCREMENT,type enum('object','user','group','site') NOT NULL,subtype int(11) DEFAULT NULL,owner_guid bigint(20) unsigned NOT NULL,site_guid bigint(20) unsigned NOT NULL,container_guid bigint(20) unsigned NOT NULL,access_id int(11) NOT NULL,time_created int(11) NOT NULL,time_updated int(11) NOT NULL,last_action int(11) NOT NULL DEFAULT '0',enabled enum('yes','no') NOT NULL DEFAULT 'yes',PRIMARY KEY (guid),KEY type (type),KEY subtype (subtype),KEY owner_guid (owner_guid),KEY site_guid (site_guid),KEY container_guid (container_guid),KEY access_id (access_id),KEY time_created (time_created),KEY time_updated (time_updated)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8; CREATE TABLE elggDB_entity_relationships (id int(11) NOT NULL AUTO_INCREMENT,guid_one bigint(20) unsigned NOT NULL,relationship varchar(50) NOT NULL,guid_two bigint(20) unsigned NOT NULL,time_created int(11) NOT NULL,PRIMARY KEY (id),UNIQUE KEY guid_one (guid_one,relationship,guid_two),KEY relationship (relationship),KEY guid_two (guid_two)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_entity_subtypes (id int(11) NOT NULL AUTO_INCREMENT,type enum('object','user','group','site') NOT NULL,subtype varchar(50) NOT NULL,class varchar(50) NOT NULL DEFAULT '',PRIMARY KEY (id),UNIQUE KEY type (type,subtype)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  "
@@ -91,10 +107,20 @@ cp /var/www/html/elgg-2.2.2/vendor/elgg/elgg/elgg-config/settings.example.php /v
 cd /var/www/html/kpax2/elgg-config/
 sed -i 's/{{timezone}}/Europe\/Amsterdam/g' settings.php
 sed -i 's/{{dbuser}}/elgguser/g' settings.php
-sed -i 's/{{dbpassword}}/elggpassword/g' settings.php
+sed -i "s/{{dbpassword}}/${ELGG_DB_PASSWORD}/g" settings.php
 sed -i 's/{{dbname}}/elggDB/g' settings.php
 sed -i 's/{{dbhost}}/localhost/g' settings.php
 sed -i 's/{{dbprefix}}/elggDB_/g' settings.php
+
+# settings.php now holds the database password, and it was left world-readable -
+# on a shared host every other account could read it, and Apache would serve it
+# as text if it ever landed outside the document root's PHP handler. Readable by
+# the web server's group and by nobody else.
+chown root:www-data settings.php
+chmod 640 settings.php
+
+echo "Database password for 'elgguser' (also written to settings.php):"
+echo "  ${ELGG_DB_PASSWORD}"
 read -rsp $'Press any key to continue...\n' -n1
 
 # Install Elgg
