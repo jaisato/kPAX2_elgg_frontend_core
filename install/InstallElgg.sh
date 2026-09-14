@@ -85,7 +85,37 @@ esac
 # bare name to elgguser@'%' - reachable from any host that can open port 3306.
 # Elgg connects over localhost (settings.php sets dbhost to it below), so there
 # is nothing to gain from the wider grant.
-mysql -u root -p -e "CREATE DATABASE elggDB;CREATE USER 'elgguser'@'localhost' IDENTIFIED BY '${ELGG_DB_PASSWORD}';GRANT ALL ON elggDB.* TO 'elgguser'@'localhost';"
+#
+# The statement arrives on stdin rather than through -e. A command's arguments
+# are readable by every local account for as long as it runs - `ps`, or
+# /proc/<pid>/cmdline - and this one runs until somebody types the root password
+# at the prompt. So the new database password was being handed to exactly the
+# account the settings.php permissions further down exist to keep it from, which
+# made those permissions decorative. mysql reads the -p prompt from the terminal
+# rather than stdin, so it still asks for the root password normally with the
+# heredoc attached.
+#
+# The exit status is checked too. Rerunning this script when elggDB or
+# 'elgguser'@'localhost' already exist fails here, and the script had no `set -e`
+# and no check, so it carried on and wrote the freshly generated password into
+# settings.php while the MySQL account kept its old one. Elgg could then not
+# connect, and nothing said why.
+if ! mysql -u root -p <<SQL
+CREATE DATABASE elggDB;
+CREATE USER 'elgguser'@'localhost' IDENTIFIED BY '${ELGG_DB_PASSWORD}';
+GRANT ALL ON elggDB.* TO 'elgguser'@'localhost';
+SQL
+then
+    echo "" >&2
+    echo "Could not create the database and user, so stopping here rather than" >&2
+    echo "writing a settings.php whose password MySQL does not have." >&2
+    echo "" >&2
+    echo "If elggDB or 'elgguser'@'localhost' are left over from an earlier run," >&2
+    echo "remove them and start again:" >&2
+    echo "  mysql -u root -p -e \"DROP DATABASE IF EXISTS elggDB;\"" >&2
+    echo "  mysql -u root -p -e \"DROP USER 'elgguser'@'localhost';\"" >&2
+    exit 1
+fi
 
 mysql -u root -p elggDB -e \
 "CREATE TABLE elggDB_access_collection_membership (user_guid int(11) NOT NULL,access_collection_id int(11) NOT NULL, PRIMARY KEY (user_guid,access_collection_id)) ENGINE=MyISAM DEFAULT CHARSET=utf8; CREATE TABLE elggDB_access_collections (id int(11) NOT NULL AUTO_INCREMENT,name text NOT NULL,owner_guid bigint(20) unsigned NOT NULL,site_guid bigint(20) unsigned NOT NULL DEFAULT '0',PRIMARY KEY (id),KEY owner_guid (owner_guid),KEY site_guid (site_guid)) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_annotations (id int(11) NOT NULL AUTO_INCREMENT,entity_guid bigint(20) unsigned NOT NULL,name_id int(11) NOT NULL,value_id int(11) NOT NULL,value_type enum('integer','text') NOT NULL,owner_guid bigint(20) unsigned NOT NULL,access_id int(11) NOT NULL,time_created int(11) NOT NULL,enabled enum('yes','no') NOT NULL DEFAULT 'yes',PRIMARY KEY (id),KEY entity_guid (entity_guid),KEY name_id (name_id),KEY value_id (value_id),KEY owner_guid (owner_guid),KEY access_id (access_id)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_api_users (id int(11) NOT NULL AUTO_INCREMENT,site_guid bigint(20) unsigned DEFAULT NULL,api_key varchar(40) DEFAULT NULL,secret varchar(40) NOT NULL,active int(1) DEFAULT '1',PRIMARY KEY (id),UNIQUE KEY api_key (api_key)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_config (name varchar(255) NOT NULL,value text NOT NULL,site_guid int(11) NOT NULL,PRIMARY KEY (name,site_guid)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_datalists (name varchar(255) NOT NULL,value text NOT NULL,PRIMARY KEY (name)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_entities (guid bigint(20) unsigned NOT NULL AUTO_INCREMENT,type enum('object','user','group','site') NOT NULL,subtype int(11) DEFAULT NULL,owner_guid bigint(20) unsigned NOT NULL,site_guid bigint(20) unsigned NOT NULL,container_guid bigint(20) unsigned NOT NULL,access_id int(11) NOT NULL,time_created int(11) NOT NULL,time_updated int(11) NOT NULL,last_action int(11) NOT NULL DEFAULT '0',enabled enum('yes','no') NOT NULL DEFAULT 'yes',PRIMARY KEY (guid),KEY type (type),KEY subtype (subtype),KEY owner_guid (owner_guid),KEY site_guid (site_guid),KEY container_guid (container_guid),KEY access_id (access_id),KEY time_created (time_created),KEY time_updated (time_updated)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8; CREATE TABLE elggDB_entity_relationships (id int(11) NOT NULL AUTO_INCREMENT,guid_one bigint(20) unsigned NOT NULL,relationship varchar(50) NOT NULL,guid_two bigint(20) unsigned NOT NULL,time_created int(11) NOT NULL,PRIMARY KEY (id),UNIQUE KEY guid_one (guid_one,relationship,guid_two),KEY relationship (relationship),KEY guid_two (guid_two)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_entity_subtypes (id int(11) NOT NULL AUTO_INCREMENT,type enum('object','user','group','site') NOT NULL,subtype varchar(50) NOT NULL,class varchar(50) NOT NULL DEFAULT '',PRIMARY KEY (id),UNIQUE KEY type (type,subtype)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  "
