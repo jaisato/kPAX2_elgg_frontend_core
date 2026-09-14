@@ -171,8 +171,18 @@ sed -i 's/{{dbname}}/elggDB/g' settings.php
 sed -i 's/{{dbhost}}/localhost/g' settings.php
 sed -i 's/{{dbprefix}}/elggDB_/g' settings.php
 
-echo "Database password for 'elgguser' (also written to settings.php):"
-echo "  ${ELGG_DB_PASSWORD}"
+# The generated password is deliberately NOT printed here.
+#
+# It used to be, for the operator's convenience, which put it in the scrollback
+# of every recorded SSH session, provisioning log and CI transcript that ever
+# ran this script - readable by accounts that cannot open the 640 settings.php
+# a few lines above, which makes those permissions pointless again. Elgg is
+# already configured with the password; nothing downstream needs it echoed.
+#
+# To read it back, as root, on the machine:
+#   grep dbpassword /var/www/html/kpax2/elgg-config/settings.php
+echo "Database password for 'elgguser' written to settings.php (not shown here)."
+echo "Read it back with:  grep dbpassword /var/www/html/kpax2/elgg-config/settings.php"
 read -rsp $'Press any key to continue...\n' -n1
 
 # Install Elgg
