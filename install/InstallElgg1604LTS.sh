@@ -63,6 +63,27 @@ echo "About to Create MySQL Database & Tables for Elgg"
 # ELGG_DB_PASSWORD can be set beforehand to supply your own.
 ELGG_DB_PASSWORD="${ELGG_DB_PASSWORD:-$(openssl rand -hex 24)}"
 
+# A supplied password reaches three different parsers before it is stored: the
+# single-quoted SQL string below, where ' ends it; the sed replacement that
+# writes settings.php, where & means the whole match and / ends the expression;
+# and the shell in between. Escaping for three contexts is three chances to get
+# it wrong, and getting it wrong is quiet - settings.php ends up holding a
+# different password from the one MySQL was given, or CREATE USER fails while
+# the script carries on to the next step either way.
+#
+# So the accepted alphabet is restricted to characters that mean nothing to any
+# of the three. The generated default is hexadecimal and always passes.
+case "$ELGG_DB_PASSWORD" in
+  "" | *[!A-Za-z0-9._~@%^:+=-]*)
+    echo "ELGG_DB_PASSWORD must be non-empty and may only contain:" >&2
+    echo "  A-Z a-z 0-9 . _ ~ @ % ^ : + = -" >&2
+    echo "Other characters are not escaped safely for the SQL statement and the" >&2
+    echo "sed replacement this script writes, so they are refused rather than" >&2
+    echo "silently mangled. Leave the variable unset for a generated password." >&2
+    exit 1
+    ;;
+esac
+
 # 'elgguser'@'localhost', not the bare 'elgguser' this had. MySQL expands a
 # bare name to elgguser@'%' - reachable from any host that can open port 3306.
 # Elgg connects over localhost (settings.php sets dbhost to it below), so there
@@ -105,19 +126,25 @@ echo "About to configure settings.php"
 
 cp /var/www/html/elgg-2.2.2/vendor/elgg/elgg/elgg-config/settings.example.php /var/www/html/kpax2/elgg-config/settings.php
 cd /var/www/html/kpax2/elgg-config/
+
+# Lock the file down BEFORE the password is written into it, not after.
+#
+# settings.php holds the database password, and it used to be left with whatever
+# mode cp gave it - world-readable on a stock Ubuntu. Restricting it afterwards
+# still left a window between the sed that writes the credential and the chmod
+# that hides it, and a local account watching the file only has to read it once.
+# On the shared host this hardening is for, that account is the whole threat.
+#
+# Readable by the web server's group and by nobody else.
+chown root:www-data settings.php
+chmod 640 settings.php
+
 sed -i 's/{{timezone}}/Europe\/Amsterdam/g' settings.php
 sed -i 's/{{dbuser}}/elgguser/g' settings.php
 sed -i "s/{{dbpassword}}/${ELGG_DB_PASSWORD}/g" settings.php
 sed -i 's/{{dbname}}/elggDB/g' settings.php
 sed -i 's/{{dbhost}}/localhost/g' settings.php
 sed -i 's/{{dbprefix}}/elggDB_/g' settings.php
-
-# settings.php now holds the database password, and it was left world-readable -
-# on a shared host every other account could read it, and Apache would serve it
-# as text if it ever landed outside the document root's PHP handler. Readable by
-# the web server's group and by nobody else.
-chown root:www-data settings.php
-chmod 640 settings.php
 
 echo "Database password for 'elgguser' (also written to settings.php):"
 echo "  ${ELGG_DB_PASSWORD}"
