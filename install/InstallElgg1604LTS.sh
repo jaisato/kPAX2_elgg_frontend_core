@@ -51,7 +51,74 @@ read -rsp $'Press any key to continue...\n' -n1
 # Create MySQL Database & tables for Elgg
 clear
 echo "About to Create MySQL Database & Tables for Elgg"
-mysql -u root -p -e "CREATE DATABASE elggDB;CREATE USER elgguser IDENTIFIED BY 'elggpassword';GRANT ALL ON elggDB.* TO elgguser;"
+# The database password used to be the literal string 'elggpassword', written
+# both into this CREATE USER and into settings.php further down. Every site ever
+# installed from this script therefore shared one password, and it is published
+# in this repository - so knowing the host was enough to reach the database.
+#
+# It is generated per install instead. Hex on purpose: the value is substituted
+# into settings.php with sed below, and a password containing / or & would be
+# read by sed as syntax. 24 bytes of hex is 192 bits either way.
+#
+# ELGG_DB_PASSWORD can be set beforehand to supply your own.
+ELGG_DB_PASSWORD="${ELGG_DB_PASSWORD:-$(openssl rand -hex 24)}"
+
+# A supplied password reaches three different parsers before it is stored: the
+# single-quoted SQL string below, where ' ends it; the sed replacement that
+# writes settings.php, where & means the whole match and / ends the expression;
+# and the shell in between. Escaping for three contexts is three chances to get
+# it wrong, and getting it wrong is quiet - settings.php ends up holding a
+# different password from the one MySQL was given, or CREATE USER fails while
+# the script carries on to the next step either way.
+#
+# So the accepted alphabet is restricted to characters that mean nothing to any
+# of the three. The generated default is hexadecimal and always passes.
+case "$ELGG_DB_PASSWORD" in
+  "" | *[!A-Za-z0-9._~@%^:+=-]*)
+    echo "ELGG_DB_PASSWORD must be non-empty and may only contain:" >&2
+    echo "  A-Z a-z 0-9 . _ ~ @ % ^ : + = -" >&2
+    echo "Other characters are not escaped safely for the SQL statement and the" >&2
+    echo "sed replacement this script writes, so they are refused rather than" >&2
+    echo "silently mangled. Leave the variable unset for a generated password." >&2
+    exit 1
+    ;;
+esac
+
+# 'elgguser'@'localhost', not the bare 'elgguser' this had. MySQL expands a
+# bare name to elgguser@'%' - reachable from any host that can open port 3306.
+# Elgg connects over localhost (settings.php sets dbhost to it below), so there
+# is nothing to gain from the wider grant.
+#
+# The statement arrives on stdin rather than through -e. A command's arguments
+# are readable by every local account for as long as it runs - `ps`, or
+# /proc/<pid>/cmdline - and this one runs until somebody types the root password
+# at the prompt. So the new database password was being handed to exactly the
+# account the settings.php permissions further down exist to keep it from, which
+# made those permissions decorative. mysql reads the -p prompt from the terminal
+# rather than stdin, so it still asks for the root password normally with the
+# heredoc attached.
+#
+# The exit status is checked too. Rerunning this script when elggDB or
+# 'elgguser'@'localhost' already exist fails here, and the script had no `set -e`
+# and no check, so it carried on and wrote the freshly generated password into
+# settings.php while the MySQL account kept its old one. Elgg could then not
+# connect, and nothing said why.
+if ! mysql -u root -p <<SQL
+CREATE DATABASE elggDB;
+CREATE USER 'elgguser'@'localhost' IDENTIFIED BY '${ELGG_DB_PASSWORD}';
+GRANT ALL ON elggDB.* TO 'elgguser'@'localhost';
+SQL
+then
+    echo "" >&2
+    echo "Could not create the database and user, so stopping here rather than" >&2
+    echo "writing a settings.php whose password MySQL does not have." >&2
+    echo "" >&2
+    echo "If elggDB or 'elgguser'@'localhost' are left over from an earlier run," >&2
+    echo "remove them and start again:" >&2
+    echo "  mysql -u root -p -e \"DROP DATABASE IF EXISTS elggDB;\"" >&2
+    echo "  mysql -u root -p -e \"DROP USER 'elgguser'@'localhost';\"" >&2
+    exit 1
+fi
 
 mysql -u root -p elggDB -e \
 "CREATE TABLE elggDB_access_collection_membership (user_guid int(11) NOT NULL,access_collection_id int(11) NOT NULL, PRIMARY KEY (user_guid,access_collection_id)) ENGINE=MyISAM DEFAULT CHARSET=utf8; CREATE TABLE elggDB_access_collections (id int(11) NOT NULL AUTO_INCREMENT,name text NOT NULL,owner_guid bigint(20) unsigned NOT NULL,site_guid bigint(20) unsigned NOT NULL DEFAULT '0',PRIMARY KEY (id),KEY owner_guid (owner_guid),KEY site_guid (site_guid)) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_annotations (id int(11) NOT NULL AUTO_INCREMENT,entity_guid bigint(20) unsigned NOT NULL,name_id int(11) NOT NULL,value_id int(11) NOT NULL,value_type enum('integer','text') NOT NULL,owner_guid bigint(20) unsigned NOT NULL,access_id int(11) NOT NULL,time_created int(11) NOT NULL,enabled enum('yes','no') NOT NULL DEFAULT 'yes',PRIMARY KEY (id),KEY entity_guid (entity_guid),KEY name_id (name_id),KEY value_id (value_id),KEY owner_guid (owner_guid),KEY access_id (access_id)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_api_users (id int(11) NOT NULL AUTO_INCREMENT,site_guid bigint(20) unsigned DEFAULT NULL,api_key varchar(40) DEFAULT NULL,secret varchar(40) NOT NULL,active int(1) DEFAULT '1',PRIMARY KEY (id),UNIQUE KEY api_key (api_key)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_config (name varchar(255) NOT NULL,value text NOT NULL,site_guid int(11) NOT NULL,PRIMARY KEY (name,site_guid)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_datalists (name varchar(255) NOT NULL,value text NOT NULL,PRIMARY KEY (name)) ENGINE=MyISAM DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_entities (guid bigint(20) unsigned NOT NULL AUTO_INCREMENT,type enum('object','user','group','site') NOT NULL,subtype int(11) DEFAULT NULL,owner_guid bigint(20) unsigned NOT NULL,site_guid bigint(20) unsigned NOT NULL,container_guid bigint(20) unsigned NOT NULL,access_id int(11) NOT NULL,time_created int(11) NOT NULL,time_updated int(11) NOT NULL,last_action int(11) NOT NULL DEFAULT '0',enabled enum('yes','no') NOT NULL DEFAULT 'yes',PRIMARY KEY (guid),KEY type (type),KEY subtype (subtype),KEY owner_guid (owner_guid),KEY site_guid (site_guid),KEY container_guid (container_guid),KEY access_id (access_id),KEY time_created (time_created),KEY time_updated (time_updated)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8; CREATE TABLE elggDB_entity_relationships (id int(11) NOT NULL AUTO_INCREMENT,guid_one bigint(20) unsigned NOT NULL,relationship varchar(50) NOT NULL,guid_two bigint(20) unsigned NOT NULL,time_created int(11) NOT NULL,PRIMARY KEY (id),UNIQUE KEY guid_one (guid_one,relationship,guid_two),KEY relationship (relationship),KEY guid_two (guid_two)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  CREATE TABLE elggDB_entity_subtypes (id int(11) NOT NULL AUTO_INCREMENT,type enum('object','user','group','site') NOT NULL,subtype varchar(50) NOT NULL,class varchar(50) NOT NULL DEFAULT '',PRIMARY KEY (id),UNIQUE KEY type (type,subtype)) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;  "
@@ -89,12 +156,38 @@ echo "About to configure settings.php"
 
 cp /var/www/html/elgg-2.2.2/vendor/elgg/elgg/elgg-config/settings.example.php /var/www/html/kpax2/elgg-config/settings.php
 cd /var/www/html/kpax2/elgg-config/
+
+# Lock the file down BEFORE the password is written into it, not after.
+#
+# settings.php holds the database password, and it used to be left with whatever
+# mode cp gave it - world-readable on a stock Ubuntu. Restricting it afterwards
+# still left a window between the sed that writes the credential and the chmod
+# that hides it, and a local account watching the file only has to read it once.
+# On the shared host this hardening is for, that account is the whole threat.
+#
+# Readable by the web server's group and by nobody else.
+chown root:www-data settings.php
+chmod 640 settings.php
+
 sed -i 's/{{timezone}}/Europe\/Amsterdam/g' settings.php
 sed -i 's/{{dbuser}}/elgguser/g' settings.php
-sed -i 's/{{dbpassword}}/elggpassword/g' settings.php
+sed -i "s/{{dbpassword}}/${ELGG_DB_PASSWORD}/g" settings.php
 sed -i 's/{{dbname}}/elggDB/g' settings.php
 sed -i 's/{{dbhost}}/localhost/g' settings.php
 sed -i 's/{{dbprefix}}/elggDB_/g' settings.php
+
+# The generated password is deliberately NOT printed here.
+#
+# It used to be, for the operator's convenience, which put it in the scrollback
+# of every recorded SSH session, provisioning log and CI transcript that ever
+# ran this script - readable by accounts that cannot open the 640 settings.php
+# a few lines above, which makes those permissions pointless again. Elgg is
+# already configured with the password; nothing downstream needs it echoed.
+#
+# To read it back, as root, on the machine:
+#   grep dbpassword /var/www/html/kpax2/elgg-config/settings.php
+echo "Database password for 'elgguser' written to settings.php (not shown here)."
+echo "Read it back with:  grep dbpassword /var/www/html/kpax2/elgg-config/settings.php"
 read -rsp $'Press any key to continue...\n' -n1
 
 # Install Elgg
